@@ -48,5 +48,10 @@
 		]
 	},
 	"mixin": "${name}.mixins.json",
-	"access_widener": "${name}.accesswidener"
+	"access_widener": "${name}.accesswidener",
+    "custom": {
+        "loom:injected_interfaces": {
+            "net/minecraft/class_2818": [ "com/stultorum/quiltmc/blockAttributes/mixins/infs/IAttributeWorldChunk" ]
+        }
+    }
 }

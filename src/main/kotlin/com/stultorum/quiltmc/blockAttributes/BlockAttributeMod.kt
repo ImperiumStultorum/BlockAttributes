@@ -11,7 +11,7 @@ internal class BlockAttributeMod: ModInitializer {
 
     override fun onInitialize(mod: ModContainer) {
         Logger = LoggerFactory.getLogger(mod.metadata()!!.name())
-
+        
         Logger.info("Hello World!")
     }
 }
