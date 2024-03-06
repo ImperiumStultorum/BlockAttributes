@@ -1,0 +1,48 @@
+{
+	"schema_version": 1,
+	"quilt_loader": {
+		"group": "${group}",
+		"id": "${name}",
+		"version": "${version}",
+		"metadata": {
+			"name": "${prettyName}",
+			"description": "${desc}",
+			"contributors": {
+				"CoolandonRS": "Owner"
+			},
+			"contact": {
+				"homepage": "${homePage}",
+				"issues": "${repoPage}/issues",
+				"sources": "${repoPage}"
+			},
+			"icon": "assets/${name}/icon.png"
+		},
+		"intermediate_mappings": "net.fabricmc:intermediary",
+		"entrypoints": {
+			"init": {
+				"adapter": "kotlin",
+				"value": "${group}.${name}.${mainClass}"
+			}
+		},
+		"depends": [
+			{
+				"id": "quilt_loader",
+				"versions": ">=${vLoader}"
+			},
+			{
+				"id": "quilted_fabric_api",
+				"versions": ">=${vQFAPI}-"
+			},
+			{
+				"id": "qkl",
+				"versions": ">=${vQKL}-"
+			},
+			{
+				"id": "minecraft",
+				"versions": ">=${vMinecraft}"
+			}
+		]
+	},
+	"mixin": "${name}.mixins.json",
+	"access_widener": "${name}.accesswidener"
+}
