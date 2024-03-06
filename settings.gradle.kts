@@ -15,4 +15,4 @@ pluginManagement {
 	}
 }
 
-rootProject.name = "quiltTemplate"
+rootProject.name = "blockAttributes"

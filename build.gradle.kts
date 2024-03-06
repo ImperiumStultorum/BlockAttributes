@@ -50,6 +50,8 @@ dependencies {
 	modImplementation("org.quiltmc.quilt-kotlin-libraries:quilt-kotlin-libraries:$qklVer+kt.$ktVer+flk.$flkVer")
 	modImplementation("org.quiltmc.quilt-kotlin-libraries:core:$qklVer+kt.$ktVer+flk.$flkVer")
 	modImplementation("org.quiltmc.quilt-kotlin-libraries:library:$qklVer+kt.$ktVer+flk.$flkVer")
+
+    modImplementation("com.stultorum.quiltmc:blunders:${getVer("blunders")}")
 }
 
 tasks {
@@ -95,6 +97,7 @@ tasks {
 					"vLoader" to getVer("loader"),
 					"vQFAPI" to getVer("QFAPI"),
 					"vQKL" to getVer("QKL"),
+                    "vBlunders" to getVer("blunders"),
 					"vMinecraft" to getVer("minecraft")
 				)
 			)
@@ -149,8 +152,8 @@ publishing {
 				description = getPropStr("desc")
 				url = getPropStr("homeUrl")
 				licenses {
-					name = "GPL-3.0"
-					url = "https://www.gnu.org/licenses/gpl-3.0.txt"
+					name = "LGPL-3.0"
+					url = "https://www.gnu.org/licenses/lgpl-3.0.txt"
 				}
 				scm {
 					connection = "scm:git:git://${repoUrn}.git"

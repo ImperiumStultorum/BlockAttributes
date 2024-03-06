@@ -40,7 +40,11 @@
 			{
 				"id": "minecraft",
 				"versions": ">=${vMinecraft}"
-			}
+			},
+            {
+                "id": "blunders",
+                "versions": ">=${vBlunders}"
+            }
 		]
 	},
 	"mixin": "${name}.mixins.json",
