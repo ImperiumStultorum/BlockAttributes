@@ -19,13 +19,18 @@ private val Serializers: MutableMap<Class<*>, NbtSerializer<*>> = mutableMapOf(
     LongArray ::class.java to LongArrayNbtSerializer()
 )
 
-public fun getSerializer(clazz: Class<*>) = Serializers[clazz] ?: NotRegisteredException("NbtSerializer<${clazz.name}>")
+public fun getSerializer(clazz: Class<*>) = Serializers[clazz] ?: NotRegisteredException("NbtSerializer<${clazz.canonicalName}>")
 public inline fun <reified T> getSerializer() = getSerializer(T::class.java) as NbtSerializer<T>
 
 public fun serializerExistsFor(clazz: Class<*>) = Serializers.containsKey(clazz)
+public fun ensureSerializerExistsFor(clazz: Class<*>) {
+    if (!serializerExistsFor(clazz)) throw NotRegisteredException("NbtSerializer<${clazz.canonicalName}>")
+}
+public inline fun <reified T> serializerExistsFor() = serializerExistsFor(T::class.java)
+public inline fun <reified T> ensureSerializerExistsFor() = ensureSerializerExistsFor(T::class.java)
 
 public fun <T> registerSerializer(clazz: Class<T>, serializer: NbtSerializer<T>) {
-    Serializers.putIfAbsent(clazz, serializer) ?: throw AlreadyRegisteredException("NbtSerializer<${clazz.name}>")
+    Serializers.putIfAbsent(clazz, serializer) ?: throw AlreadyRegisteredException("NbtSerializer<${clazz.canonicalName}>")
 }
 
 public inline fun <reified T> toNbt(obj: T): NbtElement = getSerializer<T>().serialize(obj)
