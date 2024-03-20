@@ -1,7 +1,10 @@
 package com.stultorum.quiltmc.blockAttributes.mixins;
 
 import com.stultorum.quiltmc.blockAttributes.mixins.infs.IAttributeWorldChunk;
-import com.stultorum.quiltmc.blunders.events.DataEvent;
+import com.stultorum.quiltmc.blunders.events.PreconditionalEvent;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+import kotlin.jvm.functions.Function1;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
@@ -29,11 +32,11 @@ import static com.stultorum.quiltmc.blockAttributes.mixins.infs.IAttributeWorldC
 @Mixin(WorldChunk.class)
 public class WorldChunkMixin implements IAttributeWorldChunk {
     @Unique
-    private Map<BlockPos, HashMap<Identifier, NbtElement>> attributes = new HashMap<>();
+    private final Map<BlockPos, HashMap<Identifier, NbtElement>> attributes = new HashMap<>();
     @Unique
-    private Map<AttributeEventType, DataEvent<BlockPos>> totalityEvents = Map.ofEntries(
-        Map.entry(Update, new DataEvent()),
-        Map.entry(Remove, new DataEvent())
+    private final Map<AttributeEventType, PreconditionalEvent<BlockPos>> attributeEvents = Map.<AttributeEventType, PreconditionalEvent<BlockPos>>of(
+        Update, new PreconditionalEvent<>(),
+        Remove, new PreconditionalEvent<>()
     );
     
     
@@ -77,5 +80,30 @@ public class WorldChunkMixin implements IAttributeWorldChunk {
     @Override
     public void removeBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id) {
         this.attributes.get(pos).remove(id);
+    }
+
+    @Override
+    public void addAttributeListener(AttributeEventType type, BlockPos pos, Function0<Unit> callback) {
+        attributeEvents.get(type).addCallback(pos, callback);
+    }
+
+    @Override
+    public void addAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback) {
+        attributeEvents.get(type).addCallback((pos) -> true, callback);
+    }
+
+    @Override
+    public void addAttributeListener(AttributeEventType type, Function1<BlockPos, Boolean> condition, Function1<BlockPos, Unit> callback) {
+        attributeEvents.get(type).addCallback(condition, callback);
+    }
+
+    @Override
+    public void removeAttributeListener(AttributeEventType type, Function0<Unit> callback) {
+        attributeEvents.get(type).removeCallback(callback);
+    }
+
+    @Override
+    public void removeAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback) {
+        attributeEvents.get(type).removeCallback(callback);
     }
 }
