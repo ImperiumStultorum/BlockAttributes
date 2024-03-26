@@ -1,6 +1,6 @@
 package com.stultorum.quiltmc.blockAttributes
 
-import com.stultorum.quiltmc.blockAttributes.mixins.infs.IAttributeWorldChunk
+import com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk
 import com.stultorum.quiltmc.blockAttributes.nbt.fromNbt
 import com.stultorum.quiltmc.blockAttributes.nbt.getSerializer
 import net.minecraft.nbt.NbtElement

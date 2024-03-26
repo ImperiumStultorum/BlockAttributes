@@ -51,7 +51,7 @@
 	"access_widener": "${name}.accesswidener",
     "custom": {
         "loom:injected_interfaces": {
-            "net/minecraft/world/chunk/WorldChunk": [ "com/stultorum/quiltmc/blockAttributes/mixins/infs/IAttributeWorldChunk" ]
+            "net/minecraft/world/chunk/WorldChunk": [ "com/stultorum/quiltmc/blockAttributes/mixinfs/IAttributeWorldChunk" ]
         }
     }
 }

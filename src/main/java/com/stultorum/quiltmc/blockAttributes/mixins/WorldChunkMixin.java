@@ -1,6 +1,6 @@
 package com.stultorum.quiltmc.blockAttributes.mixins;
 
-import com.stultorum.quiltmc.blockAttributes.mixins.infs.IAttributeWorldChunk;
+import com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk;
 import com.stultorum.quiltmc.blunders.events.PreconditionalEvent;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static com.stultorum.quiltmc.blockAttributes.mixins.infs.IAttributeWorldChunk.AttributeEventType.Remove;
-import static com.stultorum.quiltmc.blockAttributes.mixins.infs.IAttributeWorldChunk.AttributeEventType.Update;
+import static com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk.AttributeEventType.Remove;
+import static com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk.AttributeEventType.Update;
 
 // TODO pain
 @Mixin(WorldChunk.class)
@@ -43,13 +43,11 @@ public class WorldChunkMixin implements IAttributeWorldChunk {
     @Inject(method = "runPostProcessing", at = @At("HEAD"))
     public void attributes$runPostProcessing(CallbackInfo ci) {
         // TODO maybe
-        throw new NotImplementedException();
     }
     
     @Inject(method = "loadFromPacket", at = @At("HEAD"))
     public void attributes$loadFromPacket(PacketByteBuf buf, NbtCompound nbt, Consumer<ChunkData.BlockEntityVisitor> consumer, CallbackInfo ci) {
         // TODO probably
-        throw new NotImplementedException();
     }
 
     @Override

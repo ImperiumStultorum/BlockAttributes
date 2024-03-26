@@ -1,4 +1,4 @@
-package com.stultorum.quiltmc.blockAttributes.mixins.infs;
+package com.stultorum.quiltmc.blockAttributes.mixinfs;
 
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
