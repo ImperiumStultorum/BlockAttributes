@@ -32,7 +32,7 @@ repositories {
 loom {
 	accessWidenerPath = file("src/main/resources/$id.accesswidener")
 	mods {
-
+        
 	}
 }
 
@@ -82,26 +82,28 @@ tasks {
 
 	processResources {
 		filteringCharset = "UTF-8"
-
-		filesMatching("quilt.mod.json5") {
-			expand(
-				mapOf(
-					"group" to project.group,
-					"name" to id,
-					"version" to project.version,
-					"mainClass" to getPropStr("mainClass"),
-					"prettyName" to getPropStr("prettyName"),
-					"desc" to getPropStr("desc"),
-					"homePage" to getPropStr("homeUrl"),
-					"repoPage" to "https://${getPropStr("repoUrn")}",
-					"vLoader" to getVer("loader"),
-					"vQFAPI" to getVer("QFAPI"),
-					"vQKL" to getVer("QKL"),
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        
+        filesMatching("quilt.mod.json") {
+            expand(
+                mapOf(
+                    "group" to project.group,
+                    "id" to getPropStr("mc_id"),
+                    "name" to id,
+                    "version" to project.version,
+                    "mainClass" to getPropStr("mainClass"),
+                    "prettyName" to getPropStr("prettyName"),
+                    "desc" to getPropStr("desc"),
+                    "homePage" to getPropStr("homeUrl"),
+                    "repoPage" to "https://${getPropStr("repoUrn")}",
+                    "vLoader" to getVer("loader"),
+                    "vQFAPI" to getVer("QFAPI"),
+                    "vQKL" to getVer("QKL"),
                     "vBlunders" to getVer("blunders"),
-					"vMinecraft" to getVer("minecraft")
-				)
-			)
-		}
+                    "vMinecraft" to getVer("minecraft")
+                )
+            ) 
+        }
 	}
 
 	javadoc {
