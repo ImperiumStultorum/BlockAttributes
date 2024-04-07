@@ -1,11 +1,15 @@
 package com.stultorum.quiltmc.blockAttributes.mixins;
 
+import com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.ChunkSerializer;
 import net.minecraft.world.chunk.Chunk;
-import org.slf4j.Logger;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.ProtoChunk;
+import net.minecraft.world.poi.PointOfInterestStorage;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,13 +17,23 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ChunkSerializer.class)
-public class ChunkSerializerMixin {
+public abstract class ChunkSerializerMixin {
     @Shadow
-    @Final
-    private static Logger LOGGER;
+    public static ChunkStatus.ChunkType getChunkType(@Nullable NbtCompound nbt) { return null; }
 
-    @Inject(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/ChunkSerializer;appendTickNbt(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/nbt/NbtCompound;Lnet/minecraft/world/chunk/Chunk$TicksToSave;)V", shift = At.Shift.BEFORE))
+    // I *think* this is when the server serializes the world into packets to send to the client.
+    @Inject(method = "serialize", at = @At(value = "TAIL"))
     private static void serializeAttributes$serialize(ServerWorld world, Chunk chunk, CallbackInfoReturnable<NbtCompound> cir) {
-        LOGGER.warn("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        var compound = cir.getReturnValue();
+        var attributeChunk = (IAttributeWorldChunk) chunk;
+        compound.put("block_attributes", attributeChunk.serializeBlockAttributes());
+    }
+    
+    // interestingly, deserialize seems to only do blockentities on protochunks, while serialize includes them on both. Following blockentities lead-- for now, at least.
+    @Inject(method = "deserialize", at = @At(value = "TAIL"))
+    private static void deserializeAttributes$deserialize(ServerWorld world, PointOfInterestStorage poiStorage, ChunkPos pos, NbtCompound nbt, CallbackInfoReturnable<ProtoChunk> cir) {
+        if (getChunkType(nbt) != ChunkStatus.ChunkType.PROTOCHUNK) return;
+        var attributeChunk = (IAttributeWorldChunk) cir.getReturnValue();
+        attributeChunk.deserializeBlockAttributes(nbt.getCompound("block_attributes"));
     }
 }

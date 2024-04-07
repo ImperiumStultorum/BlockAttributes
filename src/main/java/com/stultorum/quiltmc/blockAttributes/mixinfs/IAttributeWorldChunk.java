@@ -30,4 +30,7 @@ public interface IAttributeWorldChunk {
     public void addAttributeListener(AttributeEventType type, Function1<BlockPos, Boolean> condition, Function1<BlockPos, Unit> callback);
     public void removeAttributeListener(AttributeEventType type, Function0<Unit> callback);
     public void removeAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback);
+
+    public NbtElement serializeBlockAttributes();
+    public void deserializeBlockAttributes(NbtElement nbt);
 }
