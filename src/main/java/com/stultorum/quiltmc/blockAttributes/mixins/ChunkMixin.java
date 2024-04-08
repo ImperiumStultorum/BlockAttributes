@@ -22,6 +22,7 @@ import net.minecraft.world.gen.chunk.BlendingData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,24 +36,29 @@ import static com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk
 
 // TODO pain
 @Mixin(Chunk.class)
-public class ChunkMixin implements IAttributeWorldChunk {
+public abstract class ChunkMixin implements IAttributeWorldChunk {
+    @Shadow
+    public abstract void setNeedsSaving(boolean needsSaving);
+
     @Unique // FINAL FOR ALL INTENTS AND PURPOSES
-    private Map<BlockPos, HashMap<Identifier, NbtElement>> attributes;
+    private Map<BlockPos, Map<Identifier, NbtElement>> attributes;
     @Unique // FINAL FOR ALL INTENTS AND PURPOSES
     private Map<AttributeEventType, PreconditionalEvent<BlockPos>> attributeEvents;
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public void setBlockAttributes(@NotNull BlockPos pos, @NotNull HashMap<Identifier, NbtElement> attributes) {
+    public void setBlockAttributes(@NotNull BlockPos pos, @NotNull Map<Identifier, NbtElement> attributes) {
+        this.setNeedsSaving(true);
         this.attributes.put(pos, attributes);
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
     public void setBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id, @NotNull NbtElement nbt) {
-        this.attributes.get(pos).put(id, nbt);
+        this.setNeedsSaving(true);
+        this.attributes.computeIfAbsent(pos, (key) -> new HashMap<>()).put(id, nbt);
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public @NotNull HashMap<Identifier, NbtElement> getBlockAttributes(@NotNull BlockPos pos) {
+    public @NotNull Map<Identifier, NbtElement> getBlockAttributes(@NotNull BlockPos pos) {
         return this.attributes.computeIfAbsent(pos, (key) -> new HashMap<>());
     }
 
@@ -63,11 +69,14 @@ public class ChunkMixin implements IAttributeWorldChunk {
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
     public void clearBlockAttributes(@NotNull BlockPos pos) {
-        setBlockAttributes(pos, new HashMap<>());
+        this.setNeedsSaving(true);
+        this.attributes.remove(pos);
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
     public void removeBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id) {
+        this.setNeedsSaving(true);
+        if (!this.attributes.containsKey(pos)) return;
         this.attributes.get(pos).remove(id);
     }
     
@@ -100,6 +109,7 @@ public class ChunkMixin implements IAttributeWorldChunk {
     public NbtElement serializeBlockAttributes() {
         var list = new NbtList();
         attributes.forEach((pos, attributes) -> {
+            if (attributes == null || attributes.isEmpty()) return;
             var attributeCompound = new NbtCompound();
             attributes.forEach((k, v) -> attributeCompound.put(k.toString(), v));
             var blockCompound = new NbtCompound();
@@ -121,8 +131,18 @@ public class ChunkMixin implements IAttributeWorldChunk {
             this.attributes.put(NbtHelper.toBlockPos(compound.getCompound("pos")), attributes);
         });
     }
+    
+    @Unique
+    protected Map<BlockPos, Map<Identifier, NbtElement>> _rawGetAttributes() {
+        return this.attributes;
+    }
+    
+    @Unique
+    protected void _rawSetAttributes(Map<BlockPos, Map<Identifier, NbtElement>> attributes) {
+        this.attributes = attributes;
+    }
 
-    @Inject(method = "<init>", at = @At("TAIL"))
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;fillSectionArray(Lnet/minecraft/registry/Registry;[Lnet/minecraft/world/chunk/ChunkSection;)V", shift = At.Shift.BEFORE))
     public void attributes$ctor(ChunkPos pos, UpgradeData upgradeData, HeightLimitView heightLimitView, Registry<Biome> biomeRegistry, long inhabitedTime, ChunkSection[] sectionArrayInitializer, BlendingData blendingData, CallbackInfo ci) {
         this.attributes = new HashMap<>();
         this.attributeEvents = Map.of(

@@ -9,28 +9,26 @@ import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public interface IAttributeWorldChunk {
-    public static enum AttributeEventType {
+    enum AttributeEventType {
         Update, Remove
     }
     
-    public void setBlockAttributes(@NotNull BlockPos pos, @NotNull HashMap<Identifier, NbtElement> attributes);
-    public void setBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id, @NotNull NbtElement nbt);
-    @NotNull
-    public HashMap<Identifier, NbtElement> getBlockAttributes(@NotNull BlockPos pos);
-    @Nullable
-    public NbtElement getBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id);
-    public void clearBlockAttributes(@NotNull BlockPos pos);
-    public void removeBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id);
+    void setBlockAttributes(@NotNull BlockPos pos, @NotNull Map<Identifier, NbtElement> attributes);
+    void setBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id, @NotNull NbtElement nbt);
+    @NotNull Map<Identifier, NbtElement> getBlockAttributes(@NotNull BlockPos pos);
+    @Nullable NbtElement getBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id);
+    void clearBlockAttributes(@NotNull BlockPos pos);
+    void removeBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id);
     
-    public void addAttributeListener(AttributeEventType type, BlockPos pos, Function0<Unit> callback);
-    public void addAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback);
-    public void addAttributeListener(AttributeEventType type, Function1<BlockPos, Boolean> condition, Function1<BlockPos, Unit> callback);
-    public void removeAttributeListener(AttributeEventType type, Function0<Unit> callback);
-    public void removeAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback);
+    void addAttributeListener(AttributeEventType type, BlockPos pos, Function0<Unit> callback);
+    void addAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback);
+    void addAttributeListener(AttributeEventType type, Function1<BlockPos, Boolean> condition, Function1<BlockPos, Unit> callback);
+    void removeAttributeListener(AttributeEventType type, Function0<Unit> callback);
+    void removeAttributeListener(AttributeEventType type, Function1<BlockPos, Unit> callback);
 
-    public NbtElement serializeBlockAttributes();
-    public void deserializeBlockAttributes(NbtElement nbt);
+    NbtElement serializeBlockAttributes();
+    void deserializeBlockAttributes(NbtElement nbt);
 }
