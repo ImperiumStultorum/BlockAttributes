@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"quilt_loader": {
 		"group": "${group}",
-		"id": "${name}",
+		"id": "${id}",
 		"version": "${version}",
 		"metadata": {
 			"name": "${prettyName}",
@@ -48,5 +48,10 @@
 		]
 	},
 	"mixin": "${name}.mixins.json",
-	"access_widener": "${name}.accesswidener"
+	"access_widener": "${name}.accesswidener",
+    "custom": {
+        "loom:injected_interfaces": {
+            "net/minecraft/world/chunk/WorldChunk": [ "com/stultorum/quiltmc/blockAttributes/mixinfs/IAttributeWorldChunk" ]
+        }
+    }
 }
