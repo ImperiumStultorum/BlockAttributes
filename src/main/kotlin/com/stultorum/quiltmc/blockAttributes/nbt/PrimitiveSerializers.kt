@@ -1,57 +1,54 @@
 package com.stultorum.quiltmc.blockAttributes.nbt
 
 import com.stultorum.quiltmc.blunders.lang.Bool
-import net.minecraft.nbt.NbtByteArray
-import net.minecraft.nbt.NbtElement
-import net.minecraft.nbt.NbtIntArray
-import net.minecraft.nbt.NbtLongArray
-import org.quiltmc.qkl.library.nbt.*
+import org.quiltmc.qkl.library.nbt.NbtCompound
+import org.quiltmc.qkl.library.nbt.nbt
+import net.minecraft.nbt.NbtCompound as NbtCompoundType
 
 // Really should be compile-time generated, however since it will never change I just used regex101 replacement.
-// not array: https://regex101.com/r/UCmT4b/1
-//     array: https://regex101.com/r/dyaPpp/1
+// https://regex101.com/r/UCmT4b/2
 
-internal class StringNbtSerializer(): NbtSerializer<String>() {
-    override fun serialize(obj: String): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): String = nbt.string
+internal class StringNbtSerializer : NbtSerializer<String>() {
+    override fun serialize(obj: String): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): String = nbt.getString("val")
 }
-internal class BoolNbtSerializer(): NbtSerializer<Bool>() {
-    override fun serialize(obj: Bool): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Bool = nbt.boolean
+class BoolNbtSerializer : NbtSerializer<Bool>() {
+    override fun serialize(obj: Bool): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Bool = nbt.getBoolean("val")
 }
-internal class ByteNbtSerializer(): NbtSerializer<Byte>() {
-    override fun serialize(obj: Byte): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Byte = nbt.byte
+class ByteNbtSerializer : NbtSerializer<Byte>() {
+    override fun serialize(obj: Byte): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Byte = nbt.getByte("val")
 }
-internal class ShortNbtSerializer(): NbtSerializer<Short>() {
-    override fun serialize(obj: Short): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Short = nbt.short
+class ShortNbtSerializer : NbtSerializer<Short>() {
+    override fun serialize(obj: Short): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Short = nbt.getShort("val")
 }
-internal class IntNbtSerializer(): NbtSerializer<Int>() {
-    override fun serialize(obj: Int): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Int = nbt.int
+class IntNbtSerializer : NbtSerializer<Int>() {
+    override fun serialize(obj: Int): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Int = nbt.getInt("val")
 }
-internal class LongNbtSerializer(): NbtSerializer<Long>() {
-    override fun serialize(obj: Long): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Long = nbt.long
+class LongNbtSerializer : NbtSerializer<Long>() {
+    override fun serialize(obj: Long): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Long = nbt.getLong("val")
 }
-internal class FloatNbtSerializer(): NbtSerializer<Float>() {
-    override fun serialize(obj: Float): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Float = nbt.float
+class FloatNbtSerializer : NbtSerializer<Float>() {
+    override fun serialize(obj: Float): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Float = nbt.getFloat("val")
 }
-internal class DoubleNbtSerializer(): NbtSerializer<Double>() {
-    override fun serialize(obj: Double): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): Double = nbt.double
+class DoubleNbtSerializer : NbtSerializer<Double>() {
+    override fun serialize(obj: Double): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): Double = nbt.getDouble("val")
 }
-internal class ByteArrayNbtSerializer(): NbtSerializer<ByteArray>() {
-    override fun serialize(obj: ByteArray): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): ByteArray = (nbt as NbtByteArray).byteArray
+class ByteArrayNbtSerializer : NbtSerializer<ByteArray>() {
+    override fun serialize(obj: ByteArray): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): ByteArray = nbt.getByteArray("val")
 }
-internal class IntArrayNbtSerializer(): NbtSerializer<IntArray>() {
-    override fun serialize(obj: IntArray): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): IntArray = (nbt as NbtIntArray).intArray
+class IntArrayNbtSerializer : NbtSerializer<IntArray>() {
+    override fun serialize(obj: IntArray): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): IntArray = nbt.getIntArray("val")
 }
-internal class LongArrayNbtSerializer(): NbtSerializer<LongArray>() {
-    override fun serialize(obj: LongArray): NbtElement = obj.nbt
-    override fun deserialize(nbt: NbtElement): LongArray = (nbt as NbtLongArray).longArray
+class LongArrayNbtSerializer : NbtSerializer<LongArray>() {
+    override fun serialize(obj: LongArray): NbtCompoundType = NbtCompound(Pair("val", obj.nbt))
+    override fun deserialize(nbt: NbtCompoundType): LongArray = nbt.getLongArray("val")
 }

@@ -8,8 +8,9 @@ import com.stultorum.quiltmc.blockAttributes.setBlockAttributeNbt
 import com.stultorum.quiltmc.blockAttributes.setBlockAttributesNbt
 import net.minecraft.command.argument.BlockPosArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
-import net.minecraft.command.argument.NbtElementArgumentType
+import net.minecraft.command.argument.NbtCompoundArgumentType
 import net.minecraft.command.argument.PosArgument
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtElement
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
@@ -146,7 +147,7 @@ internal val attributesCommand =
         ).then(commandLiteral("set")
             .then(argument<SCS, PosArgument>("pos", BlockPosArgumentType.blockPos())
                 .then(argument<SCS, Identifier>("id", IdentifierArgumentType.identifier())
-                    .then(argument<SCS, NbtElement>("nbt", NbtElementArgumentType.nbtElement())
+                    .then(argument<SCS, NbtCompound>("nbt", NbtCompoundArgumentType.nbtCompound())
                         .executes { ctx ->
                             val id = getIdArg(ctx)
                             val pos = getPosArg(ctx)

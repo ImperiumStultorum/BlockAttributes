@@ -39,31 +39,31 @@ import static com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk
 public abstract class ChunkMixin implements IAttributeWorldChunk {
     @Shadow
     public abstract void setNeedsSaving(boolean needsSaving);
-
+    
     @Unique // FINAL FOR ALL INTENTS AND PURPOSES
-    private Map<BlockPos, Map<Identifier, NbtElement>> attributes;
+    protected Map<BlockPos, Map<Identifier, NbtCompound>> attributes;
     @Unique // FINAL FOR ALL INTENTS AND PURPOSES
-    private Map<AttributeEventType, PreconditionalEvent<BlockPos>> attributeEvents;
+    protected Map<AttributeEventType, PreconditionalEvent<BlockPos>> attributeEvents;
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public void setBlockAttributes(@NotNull BlockPos pos, @NotNull Map<Identifier, NbtElement> attributes) {
+    public void setBlockAttributes(@NotNull BlockPos pos, @NotNull Map<Identifier, NbtCompound> attributes) {
         this.setNeedsSaving(true);
         this.attributes.put(pos, attributes);
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public void setBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id, @NotNull NbtElement nbt) {
+    public void setBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id, @NotNull NbtCompound nbt) {
         this.setNeedsSaving(true);
         this.attributes.computeIfAbsent(pos, (key) -> new HashMap<>()).put(id, nbt);
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public @NotNull Map<Identifier, NbtElement> getBlockAttributes(@NotNull BlockPos pos) {
+    public @NotNull Map<Identifier, NbtCompound> getBlockAttributes(@NotNull BlockPos pos) {
         return this.attributes.computeIfAbsent(pos, (key) -> new HashMap<>());
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public @Nullable NbtElement getBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id) {
+    public @Nullable NbtCompound getBlockAttribute(@NotNull BlockPos pos, @NotNull Identifier id) {
         return getBlockAttributes(pos).get(id);
     }
 
@@ -121,24 +121,23 @@ public abstract class ChunkMixin implements IAttributeWorldChunk {
     }
 
     @Override @Unique @SuppressWarnings("AddedMixinMembersNamePattern")
-    public void deserializeBlockAttributes(NbtElement nbt) {
-        if (!(nbt instanceof NbtList list)) throw new ClassCastException();
-        list.forEach(ele -> {
+    public void deserializeBlockAttributes(NbtList nbt) {
+        nbt.forEach(ele -> {
             if (!(ele instanceof NbtCompound compound)) throw new ClassCastException();
             var attributeCompound = compound.getCompound("attributes");
-            var attributes = new HashMap<Identifier, NbtElement>();
-            attributeCompound.getKeys().forEach(attribute -> attributes.put(new Identifier(attribute), attributeCompound.get(attribute)));
+            var attributes = new HashMap<Identifier, NbtCompound>();
+            attributeCompound.getKeys().forEach(attribute -> attributes.put(new Identifier(attribute), attributeCompound.getCompound(attribute)));
             this.attributes.put(NbtHelper.toBlockPos(compound.getCompound("pos")), attributes);
         });
     }
     
     @Unique
-    protected Map<BlockPos, Map<Identifier, NbtElement>> _rawGetAttributes() {
+    protected Map<BlockPos, Map<Identifier, NbtCompound>> _rawGetAttributes() {
         return this.attributes;
     }
     
     @Unique
-    protected void _rawSetAttributes(Map<BlockPos, Map<Identifier, NbtElement>> attributes) {
+    protected void _rawSetAttributes(Map<BlockPos, Map<Identifier, NbtCompound>> attributes) {
         this.attributes = attributes;
     }
 

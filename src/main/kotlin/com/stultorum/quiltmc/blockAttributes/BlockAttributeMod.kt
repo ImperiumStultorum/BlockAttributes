@@ -15,7 +15,7 @@ internal class BlockAttributeMod: ModInitializer {
             dispatcher.register(attributesCommand)
         }
         
-        Logger.info("Hello World!")
+        Logger.info("BlockAttributes loaded!")
     }
     
     companion object {
