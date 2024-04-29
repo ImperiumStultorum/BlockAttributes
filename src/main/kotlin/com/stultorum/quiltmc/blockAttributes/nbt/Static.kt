@@ -7,17 +7,17 @@ import net.minecraft.nbt.NbtCompound
 
 // TODO should make Serializers generated as well. Can you create a partially generated file?
 private val Serializers: MutableMap<Class<*>, CompoundSerializer<*>> = mutableMapOf(
-    String    ::class.java to StringCompoundSerializer(),
-    Bool      ::class.java to BooleanCompoundSerializer(),
-    Byte      ::class.java to ByteCompoundSerializer(),
-    Short     ::class.java to ShortCompoundSerializer(),
-    Int       ::class.java to IntCompoundSerializer(),
-    Long      ::class.java to LongCompoundSerializer(),
-    Float     ::class.java to FloatCompoundSerializer(),
-    Double    ::class.java to DoubleCompoundSerializer(),
-    ByteArray ::class.java to ByteArrayCompoundSerializer(),
-    IntArray  ::class.java to IntArrayCompoundSerializer(),
-    LongArray ::class.java to LongArrayCompoundSerializer()
+    String    ::class.javaObjectType to StringCompoundSerializer(),
+    Bool      ::class.javaObjectType to BooleanCompoundSerializer(),
+    Byte      ::class.javaObjectType to ByteCompoundSerializer(),
+    Short     ::class.javaObjectType to ShortCompoundSerializer(),
+    Int       ::class.javaObjectType to IntCompoundSerializer(),
+    Long      ::class.javaObjectType to LongCompoundSerializer(),
+    Float     ::class.javaObjectType to FloatCompoundSerializer(),
+    Double    ::class.javaObjectType to DoubleCompoundSerializer(),
+    ByteArray ::class.javaObjectType to ByteArrayCompoundSerializer(),
+    IntArray  ::class.javaObjectType to IntArrayCompoundSerializer(),
+    LongArray ::class.javaObjectType to LongArrayCompoundSerializer()
 )
 
 fun getSerializer(clazz: Class<*>): CompoundSerializer<*> {
@@ -30,13 +30,13 @@ inline fun <reified T> getSerializer() = getSerializer(T::class.java) as Compoun
 
 fun serializerExistsFor(clazz: Class<*>): Bool = Serializers.containsKey(clazz)
 fun ensureSerializerExistsFor(clazz: Class<*>) {
-    if (!serializerExistsFor(clazz)) throw NotRegisteredException("NbtSerializer<${clazz.canonicalName}>")
+    if (!serializerExistsFor(clazz)) throw NotRegisteredException("CompoundSerializer<${clazz.canonicalName}>")
 }
 inline fun <reified T> serializerExistsFor() = serializerExistsFor(T::class.java)
 inline fun <reified T> ensureSerializerExistsFor() = ensureSerializerExistsFor(T::class.java)
 
 fun <T> registerSerializer(clazz: Class<T>, serializer: CompoundSerializer<T>) {
-    if (Serializers.containsKey(clazz)) throw AlreadyRegisteredException("NbtSerializer<${clazz.canonicalName}>")
+    if (Serializers.containsKey(clazz)) throw AlreadyRegisteredException("CompoundSerializer<${clazz.canonicalName}>")
     Serializers[clazz] = serializer
 }
 
