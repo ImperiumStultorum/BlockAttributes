@@ -31,7 +31,7 @@ inline fun <reified T> World.getBlockAttribute(pos: BlockPos, id: Identifier, ex
     return fromNbtCompound<T>(getBlockAttributeNbt(pos, id, existingStamp) ?: return null)
 }
 
-fun World.getBlockAttributeNbt(pos: BlockPos, id: Identifier, existingStamp: Stamp): NbtCompound? = getBlockAttributesNbt(pos, existingStamp, ExactPattern(id))[id]
+fun World.getBlockAttributeNbt(pos: BlockPos, id: Identifier, existingStamp: Stamp = 0): NbtCompound? = getBlockAttributesNbt(pos, existingStamp, ExactPattern(id))[id]
 
 /** 
  * Pass in null to remove.
