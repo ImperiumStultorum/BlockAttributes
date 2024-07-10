@@ -57,7 +57,7 @@ class AttributeLocker {
 
         try {
             for ((pat, lok) in activeLocks) {
-                if (pat.isIdenticalTo(newPattern)) return lock(lok)
+                if (pat == newPattern) return lock(lok)
                 if (newPattern.isSubsetOf(pat) || mostExactPattern.isSubsetOf(pat)) {
                     if (pat.isSubsetOf(mostExactPattern)) {
                         mostExactPattern = pat

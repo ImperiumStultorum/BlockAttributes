@@ -48,7 +48,10 @@ fun World.setBlockAttributeNbt(pos: BlockPos, id: Identifier, obj: NbtCompound?,
 
 inline fun <reified T> World.setBlockAttribute(pos: BlockPos, id: Identifier, obj: T?, existingStamp: Stamp = 0) = setBlockAttributeNbt(pos, id, toNbtCompound(obj), existingStamp)
 
-fun World.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes, existingStamp: Stamp = 0) {
+/**
+ * Pass in null to remove.
+ */
+fun World.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes?, existingStamp: Stamp = 0) {
     if (!safeToQueryBlock(pos)) return
     val stamp = getAttributeLocker().verifyOrWriteLock(GlobalPattern(), existingStamp)
     try {
@@ -68,7 +71,7 @@ fun World.removeAttributeListener(type: AttributeEventType, pos: BlockPos, callb
     getWorldChunk(pos).removeAttributeListener(type, callback)
 }
 
-private fun World.safeToQueryBlock(pos: BlockPos): Bool = isOutOfHeightLimit(pos) || (!isClient && Thread.currentThread() != thread)
+private fun World.safeToQueryBlock(pos: BlockPos): Bool = !isOutOfHeightLimit(pos) && !isClient && Thread.currentThread() == thread
 
 // Lock util
 private val lockers = HashMap<World, AttributeLocker>()
