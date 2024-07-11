@@ -71,7 +71,8 @@ fun World.removeAttributeListener(type: AttributeEventType, pos: BlockPos, callb
     getWorldChunk(pos).removeAttributeListener(type, callback)
 }
 
-private fun World.safeToQueryBlock(pos: BlockPos): Bool = !isOutOfHeightLimit(pos) && !isClient && Thread.currentThread() == thread
+// Basically stolen from the checks blockentity code does
+private fun World.safeToQueryBlock(pos: BlockPos): Bool = !isOutOfHeightLimit(pos) && (!isClient || Thread.currentThread() == thread)
 
 // Lock util
 private val lockers = HashMap<World, AttributeLocker>()
@@ -88,6 +89,7 @@ inline fun <reified T: Any> Chunk.getBlockAttribute(pos: BlockPos, id: Identifie
 }
 
 // Chunk -> IAttributeWorldChunk forwarding 
+// Note these will ignore locking.
 fun Chunk.getBlockAttributesNbt(pos: BlockPos): BlockAttributes = asAttributeChunk().getBlockAttributes(pos)
 fun Chunk.getBlockAttributeNbt(pos: BlockPos, id: Identifier): NbtCompound? = asAttributeChunk().getBlockAttribute(pos, id)
 fun Chunk.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes?): Unit = if (attributes == null) clearBlockAttributes(pos) else asAttributeChunk().setBlockAttributes(pos, attributes)
