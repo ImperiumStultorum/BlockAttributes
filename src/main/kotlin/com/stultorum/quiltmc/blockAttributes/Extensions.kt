@@ -2,9 +2,9 @@
 
 package com.stultorum.quiltmc.blockAttributes
 
+import com.stultorum.quiltmc.blockAttributes.locks.*
 import com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk
 import com.stultorum.quiltmc.blockAttributes.mixinfs.IAttributeWorldChunk.AttributeEventType
-import com.stultorum.quiltmc.blockAttributes.nbt.DelayedAttributeChange
 import com.stultorum.quiltmc.blockAttributes.nbt.fromNbtCompound
 import com.stultorum.quiltmc.blockAttributes.nbt.getSerializer
 import com.stultorum.quiltmc.blockAttributes.nbt.toNbtCompound
@@ -14,56 +14,51 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraft.world.chunk.Chunk
-import java.util.concurrent.CountDownLatch
 
 typealias BlockAttributes = Map<Identifier, NbtCompound>
 
-private data class DelayedChange(var lock: CountDownLatch, val change: DelayedAttributeChange)
-private val delayedChanges = HashMap<BlockPos, DelayedChange>()
-
-fun World.getBlockAttributesNbt(pos: BlockPos): BlockAttributes {
+fun World.getBlockAttributesNbt(pos: BlockPos, existingStamp: Stamp = 0, pattern: IIdentifierPattern = GlobalPattern()): BlockAttributes {
     if (!safeToQueryBlock(pos)) return HashMap()
-    delayedChanges[pos]?.lock?.await()
-    return getWorldChunk(pos).getBlockAttributesNbt(pos)
+    val stamp = getAttributeLocker().verifyOrReadLock(pattern, existingStamp)
+    try {
+        return getWorldChunk(pos).getBlockAttributesNbt(pos)
+    } finally {
+        if (stamp != null) getAttributeLocker().unlock(pattern, stamp)
+    }
 }
 
-inline fun <reified T> World.getBlockAttribute(pos: BlockPos, id: Identifier): T? {
-    return fromNbtCompound<T>(getBlockAttributesNbt(pos)[id] ?: return null)
+inline fun <reified T> World.getBlockAttribute(pos: BlockPos, id: Identifier, existingStamp: Stamp = 0): T? {
+    return fromNbtCompound<T>(getBlockAttributeNbt(pos, id, existingStamp) ?: return null)
 }
 
-fun World.getBlockAttributeNbt(pos: BlockPos, id: Identifier): NbtCompound? = getBlockAttributesNbt(pos)[id]
-
-inline fun <reified T> World.setBlockAttribute(pos: BlockPos, id: Identifier, obj: T?) = setBlockAttributeNbt(pos, id, toNbtCompound(obj))
+fun World.getBlockAttributeNbt(pos: BlockPos, id: Identifier, existingStamp: Stamp = 0): NbtCompound? = getBlockAttributesNbt(pos, existingStamp, ExactPattern(id))[id]
 
 /** 
  * Pass in null to remove.
  */
-fun World.setBlockAttributeNbt(pos: BlockPos, id: Identifier, obj: NbtCompound?) {
+fun World.setBlockAttributeNbt(pos: BlockPos, id: Identifier, obj: NbtCompound?, existingStamp: Stamp = 0) {
     if (!safeToQueryBlock(pos)) return
-    delayedChanges[pos]?.lock?.await()
-    getWorldChunk(pos).setBlockAttributeNbt(pos, id, obj)
-}
-
-fun World.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes) {
-    if (!safeToQueryBlock(pos)) return
-    delayedChanges[pos]?.lock?.await()
-    getWorldChunk(pos).setBlockAttributesNbt(pos, attributes)
-}
-
-fun World.requestAttributeChange(pos: BlockPos, id: Identifier, change: (NbtCompound) -> NbtCompound) {
-    if (!safeToQueryBlock(pos)) return
-    if (!delayedChanges.containsKey(pos)) {
-        delayedChanges[pos] = DelayedChange(CountDownLatch(1), DelayedAttributeChange(pos))
+    val stamp = getAttributeLocker().verifyOrWriteLock(ExactPattern(id), existingStamp)
+    try {
+        getWorldChunk(pos).setBlockAttributeNbt(pos, id, obj)
+    } finally {
+        if (stamp != null) getAttributeLocker().unlock(ExactPattern(id), stamp)
     }
-    val delayedChange = delayedChanges[pos]!!
-    if (delayedChange.lock.count == 0L) delayedChange.lock = CountDownLatch(1)
-    delayedChange.change.request(id, change)
 }
 
-fun World.applyAttributeChange(pos: BlockPos) {
+inline fun <reified T> World.setBlockAttribute(pos: BlockPos, id: Identifier, obj: T?, existingStamp: Stamp = 0) = setBlockAttributeNbt(pos, id, toNbtCompound(obj), existingStamp)
+
+/**
+ * Pass in null to remove.
+ */
+fun World.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes?, existingStamp: Stamp = 0) {
     if (!safeToQueryBlock(pos)) return
-    delayedChanges[pos]!!.change.apply(this)
-    delayedChanges[pos]!!.lock.countDown()
+    val stamp = getAttributeLocker().verifyOrWriteLock(GlobalPattern(), existingStamp)
+    try {
+        getWorldChunk(pos).setBlockAttributesNbt(pos, attributes)
+    } finally {
+        if (stamp != null) getAttributeLocker().unlock(GlobalPattern(), stamp)
+    }
 }
 
 fun World.addAttributeListener(type: AttributeEventType, pos: BlockPos, callback: () -> Unit) {
@@ -76,7 +71,13 @@ fun World.removeAttributeListener(type: AttributeEventType, pos: BlockPos, callb
     getWorldChunk(pos).removeAttributeListener(type, callback)
 }
 
-private fun World.safeToQueryBlock(pos: BlockPos): Bool = isOutOfHeightLimit(pos) || (!isClient && Thread.currentThread() != thread)
+// Basically stolen from the checks blockentity code does
+private fun World.safeToQueryBlock(pos: BlockPos): Bool = !isOutOfHeightLimit(pos) && (!isClient || Thread.currentThread() == thread)
+
+// Lock util
+private val lockers = HashMap<World, AttributeLocker>()
+
+fun World.getAttributeLocker(): AttributeLocker = lockers.computeIfAbsent(this) { AttributeLocker() }
 
 // Chunk -> IAttributeWorldChunk util
 @Suppress("NOTHING_TO_INLINE") // Literally just done because this simple of a function not being inlined makes less sense to me then the opposite.
@@ -88,6 +89,7 @@ inline fun <reified T: Any> Chunk.getBlockAttribute(pos: BlockPos, id: Identifie
 }
 
 // Chunk -> IAttributeWorldChunk forwarding 
+// Note these will ignore locking.
 fun Chunk.getBlockAttributesNbt(pos: BlockPos): BlockAttributes = asAttributeChunk().getBlockAttributes(pos)
 fun Chunk.getBlockAttributeNbt(pos: BlockPos, id: Identifier): NbtCompound? = asAttributeChunk().getBlockAttribute(pos, id)
 fun Chunk.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes?): Unit = if (attributes == null) clearBlockAttributes(pos) else asAttributeChunk().setBlockAttributes(pos, attributes)

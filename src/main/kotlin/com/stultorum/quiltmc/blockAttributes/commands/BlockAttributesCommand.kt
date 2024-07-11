@@ -2,10 +2,7 @@ package com.stultorum.quiltmc.blockAttributes.commands
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
-import com.stultorum.quiltmc.blockAttributes.getBlockAttributeNbt
-import com.stultorum.quiltmc.blockAttributes.getBlockAttributesNbt
-import com.stultorum.quiltmc.blockAttributes.setBlockAttributeNbt
-import com.stultorum.quiltmc.blockAttributes.setBlockAttributesNbt
+import com.stultorum.quiltmc.blockAttributes.*
 import net.minecraft.command.argument.BlockPosArgumentType
 import net.minecraft.command.argument.IdentifierArgumentType
 import net.minecraft.command.argument.NbtCompoundArgumentType
@@ -210,5 +207,19 @@ internal val attributesCommand =
                         }
                     )
                 )
+            )
+        ).then(commandLiteral("clear")
+            .then(argument<SCS, PosArgument>("pos", BlockPosArgumentType.blockPos())
+                .executes { ctx ->
+                    val pos = getPosArg(ctx)
+                    ctx.world.setBlockAttributesNbt(pos, null)
+                    ctx.source.sendFeedback({
+                        val reply = TextBuilder()
+                        reply.literal("Cleared all attributes from ")
+                        reply.addPos(pos)
+                        return@sendFeedback reply.build()
+                    }, true)
+                    return@executes 0
+                }
             )
         )
