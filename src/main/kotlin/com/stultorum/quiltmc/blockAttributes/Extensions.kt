@@ -19,11 +19,11 @@ typealias BlockAttributes = Map<Identifier, NbtCompound>
 
 fun World.getBlockAttributesNbt(pos: BlockPos, existingStamp: Stamp = 0, pattern: IIdentifierPattern = GlobalPattern()): BlockAttributes {
     if (!safeToQueryBlock(pos)) return HashMap()
-    val stamp = getAttributeLocker().verifyOrReadLock(pattern, existingStamp)
+    val stamp = getAttributeLocker(pos).verifyOrReadLock(pattern, existingStamp)
     try {
         return getWorldChunk(pos).getBlockAttributesNbt(pos)
     } finally {
-        if (stamp != null) getAttributeLocker().unlock(pattern, stamp)
+        if (stamp != null) getAttributeLocker(pos).unlock(pattern, stamp)
     }
 }
 
@@ -38,11 +38,11 @@ fun World.getBlockAttributeNbt(pos: BlockPos, id: Identifier, existingStamp: Sta
  */
 fun World.setBlockAttributeNbt(pos: BlockPos, id: Identifier, obj: NbtCompound?, existingStamp: Stamp = 0) {
     if (!safeToQueryBlock(pos)) return
-    val stamp = getAttributeLocker().verifyOrWriteLock(ExactPattern(id), existingStamp)
+    val stamp = getAttributeLocker(pos).verifyOrWriteLock(ExactPattern(id), existingStamp)
     try {
         getWorldChunk(pos).setBlockAttributeNbt(pos, id, obj)
     } finally {
-        if (stamp != null) getAttributeLocker().unlock(ExactPattern(id), stamp)
+        if (stamp != null) getAttributeLocker(pos).unlock(ExactPattern(id), stamp)
     }
 }
 
@@ -53,11 +53,11 @@ inline fun <reified T> World.setBlockAttribute(pos: BlockPos, id: Identifier, ob
  */
 fun World.setBlockAttributesNbt(pos: BlockPos, attributes: BlockAttributes?, existingStamp: Stamp = 0) {
     if (!safeToQueryBlock(pos)) return
-    val stamp = getAttributeLocker().verifyOrWriteLock(GlobalPattern(), existingStamp)
+    val stamp = getAttributeLocker(pos).verifyOrWriteLock(GlobalPattern(), existingStamp)
     try {
         getWorldChunk(pos).setBlockAttributesNbt(pos, attributes)
     } finally {
-        if (stamp != null) getAttributeLocker().unlock(GlobalPattern(), stamp)
+        if (stamp != null) getAttributeLocker(pos).unlock(GlobalPattern(), stamp)
     }
 }
 
@@ -75,9 +75,9 @@ fun World.removeAttributeListener(type: AttributeEventType, pos: BlockPos, callb
 private fun World.safeToQueryBlock(pos: BlockPos): Bool = !isOutOfHeightLimit(pos) && (!isClient || Thread.currentThread() == thread)
 
 // Lock util
-private val lockers = HashMap<World, AttributeLocker>()
+private val lockers = HashMap<World, HashMap<BlockPos, AttributeLocker>>()
 
-fun World.getAttributeLocker(): AttributeLocker = lockers.computeIfAbsent(this) { AttributeLocker() }
+fun World.getAttributeLocker(pos: BlockPos): AttributeLocker = lockers.computeIfAbsent(this) { HashMap() }.computeIfAbsent(pos) { AttributeLocker() }
 
 // Chunk -> IAttributeWorldChunk util
 @Suppress("NOTHING_TO_INLINE") // Literally just done because this simple of a function not being inlined makes less sense to me then the opposite.
